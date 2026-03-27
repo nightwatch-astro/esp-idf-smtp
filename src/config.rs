@@ -10,20 +10,15 @@ pub enum TlsMode {
 }
 
 /// TLS certificate verification mode.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum TlsVerify {
     /// Verify server certificate against system CA bundle (default).
+    #[default]
     Verify,
     /// Accept any certificate (for self-signed servers).
     SkipVerify,
     /// Verify against a custom CA certificate in PEM format.
     CustomCa(Vec<u8>),
-}
-
-impl Default for TlsVerify {
-    fn default() -> Self {
-        Self::Verify
-    }
 }
 
 /// SMTP authentication credentials.

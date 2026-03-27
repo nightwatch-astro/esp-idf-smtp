@@ -29,15 +29,12 @@ impl EhloCapabilities {
             let line = line.trim();
             let upper = line.to_uppercase();
 
-            if upper.starts_with("AUTH ") {
-                caps.auth_methods = upper[5..]
-                    .split_whitespace()
-                    .map(|s| s.to_string())
-                    .collect();
+            if let Some(auth_str) = upper.strip_prefix("AUTH ") {
+                caps.auth_methods = auth_str.split_whitespace().map(|s| s.to_string()).collect();
             } else if upper == "STARTTLS" {
                 caps.starttls = true;
-            } else if upper.starts_with("SIZE ") {
-                caps.max_size = upper[5..].trim().parse().unwrap_or(0);
+            } else if let Some(size_str) = upper.strip_prefix("SIZE ") {
+                caps.max_size = size_str.trim().parse().unwrap_or(0);
             }
         }
 
@@ -53,7 +50,7 @@ fn read_response<T: SmtpTransport>(transport: &mut T) -> Result<SmtpResponse, Sm
     loop {
         let n = transport
             .read(&mut buf)
-            .map_err(|e| SmtpError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+            .map_err(|e| SmtpError::Io(std::io::Error::other(e)))?;
 
         if n == 0 {
             return Err(SmtpError::Io(std::io::Error::new(
@@ -80,7 +77,7 @@ fn send_command<T: SmtpTransport>(
     debug!("C: {}", command);
     transport
         .write_all(line.as_bytes())
-        .map_err(|e| SmtpError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| SmtpError::Io(std::io::Error::other(e)))?;
     read_response(transport)
 }
 
@@ -184,20 +181,20 @@ pub fn send_email<T: SmtpTransport>(
     let headers = email.headers();
     transport
         .write_all(headers.as_bytes())
-        .map_err(|e| SmtpError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| SmtpError::Io(std::io::Error::other(e)))?;
     transport
         .write_all(b"\r\n")
-        .map_err(|e| SmtpError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| SmtpError::Io(std::io::Error::other(e)))?;
 
     let body = email.formatted_body();
     transport
         .write_all(body.as_bytes())
-        .map_err(|e| SmtpError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| SmtpError::Io(std::io::Error::other(e)))?;
 
     // End of message
     transport
         .write_all(b".\r\n")
-        .map_err(|e| SmtpError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+        .map_err(|e| SmtpError::Io(std::io::Error::other(e)))?;
 
     let msg_resp = read_response(transport)?;
     if !msg_resp.is_success() {

@@ -27,7 +27,10 @@ impl MockTransport {
     /// Create a new mock transport with scripted responses.
     pub fn new(responses: Vec<&str>) -> Self {
         Self {
-            responses: responses.into_iter().map(|s| s.as_bytes().to_vec()).collect(),
+            responses: responses
+                .into_iter()
+                .map(|s| s.as_bytes().to_vec())
+                .collect(),
             current: Vec::new(),
             pos: 0,
             written: Vec::new(),

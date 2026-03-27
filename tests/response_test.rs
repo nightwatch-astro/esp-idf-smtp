@@ -10,7 +10,8 @@ fn parse_single_line_response() {
 
 #[test]
 fn parse_multiline_response() {
-    let data = b"250-smtp.example.com\r\n250-SIZE 35882577\r\n250-AUTH LOGIN PLAIN\r\n250 STARTTLS\r\n";
+    let data =
+        b"250-smtp.example.com\r\n250-SIZE 35882577\r\n250-AUTH LOGIN PLAIN\r\n250 STARTTLS\r\n";
     let resp = SmtpResponse::parse(data).unwrap();
     assert_eq!(resp.code, 250);
     assert!(resp.message.contains("smtp.example.com"));

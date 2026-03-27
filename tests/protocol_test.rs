@@ -17,7 +17,10 @@ struct MockTransport {
 impl MockTransport {
     fn new(responses: Vec<&str>) -> Self {
         Self {
-            responses: responses.into_iter().map(|s| s.as_bytes().to_vec()).collect(),
+            responses: responses
+                .into_iter()
+                .map(|s| s.as_bytes().to_vec())
+                .collect(),
             current: Vec::new(),
             pos: 0,
             written: Vec::new(),
@@ -109,13 +112,13 @@ fn smtp_config_defaults() {
 #[test]
 fn full_send_session_implicit_tls_no_auth() {
     let mut transport = MockTransport::new(vec![
-        "220 smtp.example.com ESMTP\r\n",                    // greeting
-        "250-smtp.example.com\r\n250 SIZE 35882577\r\n",     // EHLO
-        "250 OK\r\n",                                        // MAIL FROM
-        "250 OK\r\n",                                        // RCPT TO
-        "354 Start mail input\r\n",                          // DATA
-        "250 OK: queued\r\n",                                // message accepted
-        "221 Bye\r\n",                                       // QUIT
+        "220 smtp.example.com ESMTP\r\n",                // greeting
+        "250-smtp.example.com\r\n250 SIZE 35882577\r\n", // EHLO
+        "250 OK\r\n",                                    // MAIL FROM
+        "250 OK\r\n",                                    // RCPT TO
+        "354 Start mail input\r\n",                      // DATA
+        "250 OK: queued\r\n",                            // message accepted
+        "221 Bye\r\n",                                   // QUIT
     ]);
 
     let config = SmtpConfig::new("smtp.example.com", 465);
@@ -138,16 +141,16 @@ fn full_send_session_with_auth_plain() {
     let mut transport = MockTransport::new(vec![
         "220 smtp.example.com ESMTP\r\n",
         "250-smtp.example.com\r\n250 AUTH PLAIN LOGIN\r\n",
-        "235 Authentication successful\r\n",                  // AUTH PLAIN
-        "250 OK\r\n",                                        // MAIL FROM
-        "250 OK\r\n",                                        // RCPT TO
+        "235 Authentication successful\r\n", // AUTH PLAIN
+        "250 OK\r\n",                        // MAIL FROM
+        "250 OK\r\n",                        // RCPT TO
         "354 Start mail input\r\n",
         "250 OK: queued\r\n",
         "221 Bye\r\n",
     ]);
 
-    let config = SmtpConfig::new("smtp.example.com", 465)
-        .credentials("user@example.com", "password123");
+    let config =
+        SmtpConfig::new("smtp.example.com", 465).credentials("user@example.com", "password123");
     let email = simple_email();
 
     send_email(&mut transport, &config, &email).unwrap();
@@ -163,9 +166,9 @@ fn full_send_session_with_auth_plain() {
 fn full_send_session_with_auth_login_only() {
     let mut transport = MockTransport::new(vec![
         "220 smtp.example.com ESMTP\r\n",
-        "250-smtp.example.com\r\n250 AUTH LOGIN\r\n",        // LOGIN only
-        "334 VXNlcm5hbWU6\r\n",                              // AUTH LOGIN prompt
-        "334 UGFzc3dvcmQ6\r\n",                              // password prompt
+        "250-smtp.example.com\r\n250 AUTH LOGIN\r\n", // LOGIN only
+        "334 VXNlcm5hbWU6\r\n",                       // AUTH LOGIN prompt
+        "334 UGFzc3dvcmQ6\r\n",                       // password prompt
         "235 Authentication successful\r\n",
         "250 OK\r\n",
         "250 OK\r\n",
@@ -174,8 +177,7 @@ fn full_send_session_with_auth_login_only() {
         "221 Bye\r\n",
     ]);
 
-    let config = SmtpConfig::new("smtp.example.com", 465)
-        .credentials("user", "pass");
+    let config = SmtpConfig::new("smtp.example.com", 465).credentials("user", "pass");
     let email = simple_email();
 
     send_email(&mut transport, &config, &email).unwrap();
@@ -190,12 +192,12 @@ fn full_send_session_with_auth_login_only() {
 fn starttls_flow() {
     let mut transport = MockTransport::new(vec![
         "220 smtp.example.com ESMTP\r\n",
-        "250-smtp.example.com\r\n250 STARTTLS\r\n",          // first EHLO
-        "220 Ready to start TLS\r\n",                        // STARTTLS
-        "250-smtp.example.com\r\n250 AUTH PLAIN\r\n",        // second EHLO (after TLS)
-        "235 OK\r\n",                                        // AUTH
-        "250 OK\r\n",                                        // MAIL FROM
-        "250 OK\r\n",                                        // RCPT TO
+        "250-smtp.example.com\r\n250 STARTTLS\r\n", // first EHLO
+        "220 Ready to start TLS\r\n",               // STARTTLS
+        "250-smtp.example.com\r\n250 AUTH PLAIN\r\n", // second EHLO (after TLS)
+        "235 OK\r\n",                               // AUTH
+        "250 OK\r\n",                               // MAIL FROM
+        "250 OK\r\n",                               // RCPT TO
         "354 Start mail input\r\n",
         "250 OK: queued\r\n",
         "221 Bye\r\n",
@@ -223,8 +225,7 @@ fn starttls_fails_when_not_advertised() {
         "250 smtp.example.com\r\n", // No STARTTLS capability
     ]);
 
-    let config = SmtpConfig::new("smtp.example.com", 587)
-        .tls_mode(TlsMode::StartTls);
+    let config = SmtpConfig::new("smtp.example.com", 587).tls_mode(TlsMode::StartTls);
     let email = simple_email();
 
     let result = send_email(&mut transport, &config, &email);
@@ -280,8 +281,8 @@ fn error_on_rejected_recipient() {
     let mut transport = MockTransport::new(vec![
         "220 smtp.example.com ESMTP\r\n",
         "250 smtp.example.com\r\n",
-        "250 OK\r\n",               // MAIL FROM ok
-        "550 User not found\r\n",   // RCPT TO rejected
+        "250 OK\r\n",             // MAIL FROM ok
+        "550 User not found\r\n", // RCPT TO rejected
     ]);
 
     let config = SmtpConfig::new("smtp.example.com", 465);
@@ -331,15 +332,16 @@ fn error_on_connection_drop() {
 
 #[test]
 fn error_on_bad_greeting() {
-    let mut transport = MockTransport::new(vec![
-        "554 Service unavailable\r\n",
-    ]);
+    let mut transport = MockTransport::new(vec!["554 Service unavailable\r\n"]);
 
     let config = SmtpConfig::new("smtp.example.com", 465);
     let email = simple_email();
 
     let result = send_email(&mut transport, &config, &email);
-    assert!(matches!(result, Err(SmtpError::Protocol { expected: 220, .. })));
+    assert!(matches!(
+        result,
+        Err(SmtpError::Protocol { expected: 220, .. })
+    ));
 }
 
 // --- Auth tests (T024) ---
@@ -352,8 +354,7 @@ fn auth_invalid_credentials() {
         "535 Authentication failed\r\n",
     ]);
 
-    let config = SmtpConfig::new("smtp.example.com", 465)
-        .credentials("bad", "wrong");
+    let config = SmtpConfig::new("smtp.example.com", 465).credentials("bad", "wrong");
     let email = simple_email();
 
     let result = send_email(&mut transport, &config, &email);
@@ -388,11 +389,11 @@ fn multi_recipient_rcpt_to_commands() {
     let mut transport = MockTransport::new(vec![
         "220 smtp.example.com ESMTP\r\n",
         "250 smtp.example.com\r\n",
-        "250 OK\r\n",    // MAIL FROM
-        "250 OK\r\n",    // RCPT TO #1
-        "250 OK\r\n",    // RCPT TO #2
-        "250 OK\r\n",    // RCPT TO #3 (CC)
-        "250 OK\r\n",    // RCPT TO #4 (BCC)
+        "250 OK\r\n", // MAIL FROM
+        "250 OK\r\n", // RCPT TO #1
+        "250 OK\r\n", // RCPT TO #2
+        "250 OK\r\n", // RCPT TO #3 (CC)
+        "250 OK\r\n", // RCPT TO #4 (BCC)
         "354 Start\r\n",
         "250 OK\r\n",
         "221 Bye\r\n",
@@ -419,6 +420,36 @@ fn multi_recipient_rcpt_to_commands() {
     assert!(cmds.contains("RCPT TO:<to2@x.com>"));
     assert!(cmds.contains("RCPT TO:<cc1@x.com>"));
     assert!(cmds.contains("RCPT TO:<bcc1@x.com>"));
+}
+
+// --- TlsVerify config tests (T031) ---
+
+#[test]
+fn config_verify_certs_default() {
+    let config = SmtpConfig::new("smtp.example.com", 465);
+    assert!(matches!(
+        config.tls_verify,
+        esp_idf_smtp::config::TlsVerify::Verify
+    ));
+}
+
+#[test]
+fn config_skip_cert_verification() {
+    let config = SmtpConfig::new("smtp.example.com", 465).skip_cert_verification();
+    assert!(matches!(
+        config.tls_verify,
+        esp_idf_smtp::config::TlsVerify::SkipVerify
+    ));
+}
+
+#[test]
+fn config_custom_ca() {
+    let pem = b"-----BEGIN CERTIFICATE-----\nfake\n-----END CERTIFICATE-----";
+    let config = SmtpConfig::new("smtp.example.com", 465).ca_cert_pem(pem);
+    assert!(matches!(
+        config.tls_verify,
+        esp_idf_smtp::config::TlsVerify::CustomCa(_)
+    ));
 }
 
 // --- SC-001: Under 10 lines ---
