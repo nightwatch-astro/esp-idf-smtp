@@ -14,6 +14,7 @@ use std::time::Duration;
 /// - **Plain**: `TcpStream` only (no TLS)
 pub struct EspTransport {
     inner: TransportInner,
+    timeout_ms: u32,
 }
 
 enum TransportInner {
@@ -53,7 +54,7 @@ impl EspTransport {
 
     /// Connect with TLS from the start (implicit TLS, typically port 465).
     fn connect_tls(config: &SmtpConfig) -> Result<Self, io::Error> {
-        let tls_cfg = build_tls_cfg(&config.tls_verify);
+        let tls_cfg = build_tls_cfg(&config.tls_verify, config.timeout_ms);
 
         let tls = unsafe { esp_idf_svc::sys::esp_tls_init() };
         if tls.is_null() {
@@ -89,10 +90,15 @@ impl EspTransport {
             ));
         }
 
-        log::debug!("Connected to {}:{} (implicit TLS)", config.host, config.port);
+        log::debug!(
+            "Connected to {}:{} (implicit TLS)",
+            config.host,
+            config.port
+        );
 
         Ok(Self {
             inner: TransportInner::Tls(EspTlsConnection { tls }),
+            timeout_ms: config.timeout_ms,
         })
     }
 
@@ -115,6 +121,7 @@ impl EspTransport {
 
         Ok(Self {
             inner: TransportInner::Plain(stream),
+            timeout_ms: config.timeout_ms,
         })
     }
 }
@@ -126,8 +133,13 @@ impl SmtpTransport for EspTransport {
         match &mut self.inner {
             TransportInner::Plain(stream) => stream.read(buf),
             TransportInner::Tls(conn) => {
-                let ret =
-                    unsafe { esp_idf_svc::sys::esp_tls_conn_read(conn.tls, buf.as_mut_ptr() as *mut _, buf.len()) };
+                let ret = unsafe {
+                    esp_idf_svc::sys::esp_tls_conn_read(
+                        conn.tls,
+                        buf.as_mut_ptr() as *mut _,
+                        buf.len(),
+                    )
+                };
 
                 if ret > 0 {
                     Ok(ret as usize)
@@ -187,7 +199,7 @@ impl SmtpTransport for EspTransport {
         use std::os::fd::AsRawFd;
         let fd = stream.as_raw_fd();
 
-        let tls_cfg = build_tls_cfg(tls_verify);
+        let tls_cfg = build_tls_cfg(tls_verify, self.timeout_ms);
 
         let tls = unsafe { esp_idf_svc::sys::esp_tls_init() };
         if tls.is_null() {
@@ -235,9 +247,11 @@ impl SmtpTransport for EspTransport {
     }
 }
 
-/// Build esp_tls_cfg_t from TlsVerify settings.
-fn build_tls_cfg(tls_verify: &TlsVerify) -> esp_idf_svc::sys::esp_tls_cfg_t {
+/// Build esp_tls_cfg_t from TlsVerify settings and timeout.
+fn build_tls_cfg(tls_verify: &TlsVerify, timeout_ms: u32) -> esp_idf_svc::sys::esp_tls_cfg_t {
     let mut cfg: esp_idf_svc::sys::esp_tls_cfg_t = unsafe { std::mem::zeroed() };
+
+    cfg.timeout_ms = timeout_ms as i32;
 
     match tls_verify {
         TlsVerify::Verify => {

@@ -23,13 +23,12 @@ impl SmtpClient {
     /// Opens a connection, runs the SMTP protocol, and closes the connection.
     /// The connection is cleaned up (QUIT sent) on both success and error paths.
     pub fn send(&self, email: &Email) -> Result<(), SmtpError> {
-        let mut transport = EspTransport::connect(&self.config).map_err(|e| {
-            SmtpError::Connection {
+        let mut transport =
+            EspTransport::connect(&self.config).map_err(|e| SmtpError::Connection {
                 host: self.config.host.clone(),
                 port: self.config.port,
                 source: e,
-            }
-        })?;
+            })?;
 
         protocol::send_email(&mut transport, &self.config, email)
     }

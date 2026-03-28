@@ -47,6 +47,3 @@ pub use transport::SmtpTransport;
 
 #[cfg(feature = "esp-idf")]
 pub use client::SmtpClient;
-
-#[cfg(test)]
-mod mock_transport;
