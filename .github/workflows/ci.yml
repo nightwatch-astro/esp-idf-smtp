@@ -5,15 +5,31 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
 
+# NOTE: This crate depends on esp-idf-svc and can only compile for ESP32 targets.
+# CI is limited to formatting checks — build/test/clippy require the ESP toolchain
+# which is not available on GitHub-hosted runners.
+
 jobs:
-  check:
+  pr-title:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo check --all-features
-      - run: cargo clippy --all-features -- -D warnings
+        with:
+          components: rustfmt
       - run: cargo fmt --check
