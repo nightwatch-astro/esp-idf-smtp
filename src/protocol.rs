@@ -102,6 +102,20 @@ pub fn send_email<T: SmtpTransport>(
     config: &SmtpConfig,
     email: &Email,
 ) -> Result<(), SmtpError> {
+    let result = send_email_inner(transport, config, email);
+
+    // FR-024: QUIT on both success and error paths (best-effort)
+    let _ = send_command(transport, "QUIT");
+
+    result
+}
+
+/// Inner send logic — errors propagate to the wrapper which ensures QUIT.
+fn send_email_inner<T: SmtpTransport>(
+    transport: &mut T,
+    config: &SmtpConfig,
+    email: &Email,
+) -> Result<(), SmtpError> {
     // 1. Read server greeting (220)
     let greeting = read_response(transport)?;
     if greeting.code != 220 {
@@ -203,9 +217,6 @@ pub fn send_email<T: SmtpTransport>(
             message: msg_resp.message,
         });
     }
-
-    // 9. QUIT
-    let _ = send_command(transport, "QUIT");
 
     Ok(())
 }
