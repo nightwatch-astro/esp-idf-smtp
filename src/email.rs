@@ -48,6 +48,9 @@ pub struct Email {
     pub subject: String,
     pub body: String,
     pub message_id: Option<String>,
+    /// Optional Date header value (RFC 2822 format).
+    /// If None, no Date header is emitted.
+    pub date: Option<String>,
 }
 
 impl Email {
@@ -83,9 +86,10 @@ impl Email {
         // Subject
         h.push_str(&format!("Subject: {}\r\n", self.subject));
 
-        // Date (RFC 2822 format — simplified for embedded)
-        // Note: On ESP32 with NTP, this would use real time.
-        // For now, omit Date if no system time is available.
+        // Date (caller-provided, RFC 2822 format)
+        if let Some(ref date) = self.date {
+            h.push_str(&format!("Date: {}\r\n", date));
+        }
 
         // MIME headers
         h.push_str("MIME-Version: 1.0\r\n");
@@ -135,6 +139,7 @@ pub struct EmailBuilder {
     subject: Option<String>,
     body: Option<String>,
     message_id: Option<String>,
+    date: Option<String>,
 }
 
 impl EmailBuilder {
@@ -186,6 +191,13 @@ impl EmailBuilder {
         self
     }
 
+    /// Set the Date header value (RFC 2822 format, e.g. "Fri, 28 Mar 2026 12:00:00 +0000").
+    /// If not set, no Date header is emitted.
+    pub fn date(mut self, date: &str) -> Self {
+        self.date = Some(date.to_string());
+        self
+    }
+
     /// Build the email, validating required fields.
     pub fn build(self) -> Result<Email, SmtpError> {
         let from = self.from.ok_or_else(|| SmtpError::InvalidEmail {
@@ -214,6 +226,7 @@ impl EmailBuilder {
             subject,
             body,
             message_id: self.message_id,
+            date: self.date,
         })
     }
 }
