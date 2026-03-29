@@ -10,6 +10,14 @@ keywords = ["esp-idf", "esp32", "smtp", "email", "embedded"]
 categories = ["embedded", "email"]
 readme = "README.md"
 
+[features]
+default = ["esp-idf"]
+esp-idf = ["dep:esp-idf-svc"]
+
 [dependencies]
-esp-idf-svc = { version = "0.52", default-features = false }
+base64 = "0.22"
 log = "0.4"
+thiserror = "2"
+
+# ESP-IDF dependencies (feature-gated)
+esp-idf-svc = { version = "0.52", default-features = false, optional = true }
