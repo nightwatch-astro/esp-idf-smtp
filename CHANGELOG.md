@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.2.1...v0.2.2) - 2026-04-01
+
+### Bug Fixes
+
+- ESP-IDF 5.5 compatibility ([#9](https://github.com/nightwatch-astro/esp-idf-smtp/pull/9))
+
+### Miscellaneous
+
+- add pre-commit config with Rust hooks ([#7](https://github.com/nightwatch-astro/esp-idf-smtp/pull/7))
+
 ## [0.2.1](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.2.0...v0.2.1) - 2026-03-30
 
 ### Bug Fixes
