@@ -209,10 +209,16 @@ impl SmtpTransport for EspTransport {
             ));
         }
 
-        // Set the existing socket fd
-        unsafe {
-            // esp_tls supports upgrading an existing connection
-            (*tls).sockfd = fd;
+        // Set the existing socket fd (ESP-IDF 5.5+: esp_tls_t is opaque)
+        let ret = unsafe { esp_idf_svc::sys::esp_tls_set_conn_sockfd(tls, fd) };
+        if ret != esp_idf_svc::sys::ESP_OK {
+            unsafe {
+                esp_idf_svc::sys::esp_tls_conn_destroy(tls);
+            }
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("esp_tls_set_conn_sockfd failed: {ret}"),
+            ));
         }
 
         let host_cstr = std::ffi::CString::new(host)
@@ -261,8 +267,8 @@ fn build_tls_cfg(tls_verify: &TlsVerify, timeout_ms: u32) -> esp_idf_svc::sys::e
             cfg.skip_common_name = true;
         }
         TlsVerify::CustomCa(pem) => {
-            cfg.cacert_buf = pem.as_ptr();
-            cfg.cacert_bytes = pem.len() as u32;
+            cfg.__bindgen_anon_1.cacert_buf = pem.as_ptr();
+            cfg.__bindgen_anon_2.cacert_bytes = pem.len() as u32;
         }
     }
 
