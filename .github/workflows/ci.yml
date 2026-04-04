@@ -74,3 +74,18 @@ jobs:
               - 'src/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
+
+  ci-ok:
+    if: always()
+    needs: [pr-title, test, lint, check-features]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all jobs
+        run: |
+          results='${{ toJSON(needs) }}'
+          echo "Job results: $results"
+          if echo "$results" | jq -e 'to_entries | map(select(.value.result != "success" and .value.result != "skipped")) | length > 0' > /dev/null; then
+            echo "Some required jobs failed or were cancelled"
+            exit 1
+          fi
+          echo "All required jobs passed or were skipped"
