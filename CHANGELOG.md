@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.2.2...v0.3.0) - 2026-04-05
+
+### Features
+
+- add CI OK gate job for branch protection ([#11](https://github.com/nightwatch-astro/esp-idf-smtp/pull/11))
+
+### Miscellaneous
+
+- pin GitHub Actions to commit SHAs
+- pin GitHub Actions to commit SHAs
+- pin GitHub Actions to commit SHAs
+- add CODEOWNERS for CI security
+
+### Performance
+
+- *(ci)* use nextest and clippy --all-targets ([#13](https://github.com/nightwatch-astro/esp-idf-smtp/pull/13))
+- *(ci)* replace rust-cache with sccache ([#12](https://github.com/nightwatch-astro/esp-idf-smtp/pull/12))
+
 ## [0.2.2](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.2.1...v0.2.2) - 2026-04-01
 
 ### Bug Fixes
