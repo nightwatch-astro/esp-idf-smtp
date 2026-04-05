@@ -21,3 +21,21 @@ thiserror = "2"
 
 # ESP-IDF dependencies (feature-gated)
 esp-idf-svc = { version = "0.52", default-features = false, optional = true }
+
+[lints.clippy]
+# Lint groups (lower priority so individual overrides win)
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+
+# Restriction lints for embedded library safety
+unwrap_used = "warn"
+expect_used = "warn"
+todo = "warn"
+unimplemented = "warn"
+dbg_macro = "warn"
+undocumented_unsafe_blocks = "warn"
+mem_forget = "warn"
+
+# Transitive dependency version conflicts (not fixable by this crate)
+multiple_crate_versions = "allow"

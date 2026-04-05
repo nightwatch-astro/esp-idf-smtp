@@ -1,3 +1,5 @@
+#![allow(clippy::unwrap_used)] // Tests use unwrap for brevity — panics are the assertion mechanism
+
 use esp_idf_smtp::config::TlsVerify;
 use esp_idf_smtp::protocol::send_email;
 use esp_idf_smtp::{Email, SmtpConfig, SmtpError, SmtpTransport, TlsMode};

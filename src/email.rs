@@ -1,3 +1,5 @@
+use std::fmt::Write as _;
+
 use crate::error::SmtpError;
 
 /// An email address with optional display name.
@@ -9,6 +11,7 @@ pub struct Address {
 
 impl Address {
     /// Create an address from an email string.
+    #[must_use]
     pub fn new(email: &str) -> Self {
         Self {
             email: email.to_string(),
@@ -17,6 +20,7 @@ impl Address {
     }
 
     /// Create an address with a display name.
+    #[must_use]
     pub fn with_name(name: &str, email: &str) -> Self {
         Self {
             email: email.to_string(),
@@ -25,14 +29,16 @@ impl Address {
     }
 
     /// Format for message headers: `"Name" <email>` or `email`.
+    #[must_use]
     pub fn to_header(&self) -> String {
-        match &self.name {
-            Some(name) => format!("\"{}\" <{}>", name, self.email),
-            None => self.email.clone(),
-        }
+        self.name.as_ref().map_or_else(
+            || self.email.clone(),
+            |name| format!("\"{}\" <{}>", name, self.email),
+        )
     }
 
     /// Format for SMTP envelope (MAIL FROM / RCPT TO): just the email.
+    #[must_use]
     pub fn to_envelope(&self) -> &str {
         &self.email
     }
@@ -55,6 +61,7 @@ pub struct Email {
 
 impl Email {
     /// Start building a new email.
+    #[must_use]
     pub fn builder() -> EmailBuilder {
         EmailBuilder::default()
     }
@@ -65,30 +72,31 @@ impl Email {
     }
 
     /// Generate the email headers as a string.
+    #[must_use]
     pub fn headers(&self) -> String {
         let mut h = String::with_capacity(512);
 
         // From
-        h.push_str(&format!("From: {}\r\n", self.from.to_header()));
+        let _ = write!(h, "From: {}\r\n", self.from.to_header());
 
         // To
-        let to_list: Vec<String> = self.to.iter().map(|a| a.to_header()).collect();
-        h.push_str(&format!("To: {}\r\n", to_list.join(", ")));
+        let to_list: Vec<String> = self.to.iter().map(Address::to_header).collect();
+        let _ = write!(h, "To: {}\r\n", to_list.join(", "));
 
         // CC (if any)
         if !self.cc.is_empty() {
-            let cc_list: Vec<String> = self.cc.iter().map(|a| a.to_header()).collect();
-            h.push_str(&format!("Cc: {}\r\n", cc_list.join(", ")));
+            let cc_list: Vec<String> = self.cc.iter().map(Address::to_header).collect();
+            let _ = write!(h, "Cc: {}\r\n", cc_list.join(", "));
         }
 
         // BCC deliberately omitted from headers
 
         // Subject
-        h.push_str(&format!("Subject: {}\r\n", self.subject));
+        let _ = write!(h, "Subject: {}\r\n", self.subject);
 
         // Date (caller-provided, RFC 2822 format)
         if let Some(ref date) = self.date {
-            h.push_str(&format!("Date: {}\r\n", date));
+            let _ = write!(h, "Date: {date}\r\n");
         }
 
         // MIME headers
@@ -97,19 +105,21 @@ impl Email {
 
         // Message-ID
         if let Some(ref id) = self.message_id {
-            h.push_str(&format!("Message-ID: <{}>\r\n", id));
+            let _ = write!(h, "Message-ID: <{id}>\r\n");
         }
 
         // X-Mailer
-        h.push_str(&format!(
+        let _ = write!(
+            h,
             "X-Mailer: esp-idf-smtp/{}\r\n",
             env!("CARGO_PKG_VERSION")
-        ));
+        );
 
         h
     }
 
     /// Format the body with RFC 5321 dot-stuffing and \r\n line endings.
+    #[must_use]
     pub fn formatted_body(&self) -> String {
         let mut out = String::with_capacity(self.body.len() + 64);
 
@@ -144,48 +154,56 @@ pub struct EmailBuilder {
 
 impl EmailBuilder {
     /// Set the sender address.
+    #[must_use]
     pub fn from(mut self, email: &str) -> Self {
         self.from = Some(Address::new(email));
         self
     }
 
     /// Set the sender with a display name.
+    #[must_use]
     pub fn from_named(mut self, name: &str, email: &str) -> Self {
         self.from = Some(Address::with_name(name, email));
         self
     }
 
     /// Add a To recipient.
+    #[must_use]
     pub fn to(mut self, email: &str) -> Self {
         self.to.push(Address::new(email));
         self
     }
 
     /// Add a CC recipient.
+    #[must_use]
     pub fn cc(mut self, email: &str) -> Self {
         self.cc.push(Address::new(email));
         self
     }
 
     /// Add a BCC recipient.
+    #[must_use]
     pub fn bcc(mut self, email: &str) -> Self {
         self.bcc.push(Address::new(email));
         self
     }
 
     /// Set the subject line.
+    #[must_use]
     pub fn subject(mut self, subject: &str) -> Self {
         self.subject = Some(subject.to_string());
         self
     }
 
     /// Set the plain text body.
+    #[must_use]
     pub fn body(mut self, body: &str) -> Self {
         self.body = Some(body.to_string());
         self
     }
 
     /// Set a custom Message-ID.
+    #[must_use]
     pub fn message_id(mut self, id: &str) -> Self {
         self.message_id = Some(id.to_string());
         self
@@ -193,12 +211,18 @@ impl EmailBuilder {
 
     /// Set the Date header value (RFC 2822 format, e.g. "Fri, 28 Mar 2026 12:00:00 +0000").
     /// If not set, no Date header is emitted.
+    #[must_use]
     pub fn date(mut self, date: &str) -> Self {
         self.date = Some(date.to_string());
         self
     }
 
     /// Build the email, validating required fields.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SmtpError::InvalidEmail`] if any required field (`from`,
+    /// `to`, `subject`, `body`) is missing.
     pub fn build(self) -> Result<Email, SmtpError> {
         let from = self.from.ok_or_else(|| SmtpError::InvalidEmail {
             message: "from address is required".into(),
