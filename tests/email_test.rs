@@ -1,3 +1,5 @@
+#![allow(clippy::unwrap_used)] // Tests use unwrap for brevity — panics are the assertion mechanism
+
 use esp_idf_smtp::{Address, Email, SmtpError};
 
 #[test]
@@ -89,7 +91,7 @@ fn line_ending_normalization() {
     let body = email.formatted_body();
     // All lines should end with \r\n, no bare \n
     for line in body.split("\r\n") {
-        assert!(!line.contains('\n'), "bare \\n found in: {:?}", line);
+        assert!(!line.contains('\n'), "bare \\n found in: {line:?}");
     }
 }
 

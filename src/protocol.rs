@@ -12,7 +12,7 @@ const RESPONSE_BUF_SIZE: usize = 512;
 /// EHLO capabilities parsed from server response.
 #[derive(Debug, Default)]
 pub struct EhloCapabilities {
-    /// Supported AUTH methods (e.g., ["PLAIN", "LOGIN"]).
+    /// Supported AUTH methods (e.g., `PLAIN`, `LOGIN`).
     pub auth_methods: Vec<String>,
     /// Whether STARTTLS is advertised.
     pub starttls: bool,
@@ -22,6 +22,7 @@ pub struct EhloCapabilities {
 
 impl EhloCapabilities {
     /// Parse capabilities from a multiline EHLO response.
+    #[must_use]
     pub fn parse(response: &SmtpResponse) -> Self {
         let mut caps = Self::default();
 
@@ -30,7 +31,10 @@ impl EhloCapabilities {
             let upper = line.to_uppercase();
 
             if let Some(auth_str) = upper.strip_prefix("AUTH ") {
-                caps.auth_methods = auth_str.split_whitespace().map(|s| s.to_string()).collect();
+                caps.auth_methods = auth_str
+                    .split_whitespace()
+                    .map(ToString::to_string)
+                    .collect();
             } else if upper == "STARTTLS" {
                 caps.starttls = true;
             } else if let Some(size_str) = upper.strip_prefix("SIZE ") {
@@ -62,7 +66,7 @@ fn read_response<T: SmtpTransport>(transport: &mut T) -> Result<SmtpResponse, Sm
         data.extend_from_slice(&buf[..n]);
 
         if let Some(resp) = SmtpResponse::parse(&data) {
-            debug!("S: {}", resp);
+            debug!("S: {resp}");
             return Ok(resp);
         }
     }
@@ -73,8 +77,8 @@ fn send_command<T: SmtpTransport>(
     transport: &mut T,
     command: &str,
 ) -> Result<SmtpResponse, SmtpError> {
-    let line = format!("{}\r\n", command);
-    debug!("C: {}", command);
+    let line = format!("{command}\r\n");
+    debug!("C: {command}");
     transport
         .write_all(line.as_bytes())
         .map_err(|e| SmtpError::Io(std::io::Error::other(e)))?;
@@ -83,13 +87,13 @@ fn send_command<T: SmtpTransport>(
 
 /// Expect a specific response code, returning an error if mismatched.
 fn expect_code(response: &SmtpResponse, expected: u16) -> Result<(), SmtpError> {
-    if response.code != expected {
+    if response.code == expected {
+        Ok(())
+    } else {
         Err(SmtpError::Protocol {
             expected,
             got: response.clone(),
         })
-    } else {
-        Ok(())
     }
 }
 
@@ -97,6 +101,12 @@ fn expect_code(response: &SmtpResponse, expected: u16) -> Result<(), SmtpError> 
 ///
 /// This is the core protocol engine that operates against any `SmtpTransport`.
 /// Public so integration tests can use it with mock transports.
+///
+/// # Errors
+///
+/// Returns [`SmtpError`] on connection, protocol, authentication, or
+/// message-delivery failures. The transport is always cleanly shut down
+/// (QUIT sent) regardless of the outcome.
 pub fn send_email<T: SmtpTransport>(
     transport: &mut T,
     config: &SmtpConfig,
@@ -110,7 +120,8 @@ pub fn send_email<T: SmtpTransport>(
     result
 }
 
-/// Inner send logic — errors propagate to the wrapper which ensures QUIT.
+/// Inner send logic -- errors propagate to the wrapper which ensures QUIT.
+#[allow(clippy::similar_names)] // ehlo_resp / post_tls_ehlo are intentionally distinct
 fn send_email_inner<T: SmtpTransport>(
     transport: &mut T,
     config: &SmtpConfig,
@@ -148,9 +159,9 @@ fn send_email_inner<T: SmtpTransport>(
             })?;
 
         // Re-EHLO after TLS upgrade
-        let ehlo2_resp = send_command(transport, "EHLO localhost")?;
-        expect_code(&ehlo2_resp, 250)?;
-        caps = EhloCapabilities::parse(&ehlo2_resp);
+        let post_tls_ehlo = send_command(transport, "EHLO localhost")?;
+        expect_code(&post_tls_ehlo, 250)?;
+        caps = EhloCapabilities::parse(&post_tls_ehlo);
     }
 
     // 4. AUTH (if credentials provided)
@@ -257,7 +268,7 @@ fn auth_plain<T: SmtpTransport>(
     token.extend_from_slice(creds.password.as_bytes());
 
     let encoded = BASE64_STANDARD.encode(&token);
-    let command = format!("AUTH PLAIN {}", encoded);
+    let command = format!("AUTH PLAIN {encoded}");
 
     let resp = send_command(transport, &command)?;
     if resp.code != 235 {
@@ -319,7 +330,7 @@ mod tests {
         let caps = EhloCapabilities::parse(&resp);
         assert_eq!(caps.auth_methods, vec!["LOGIN", "PLAIN"]);
         assert!(caps.starttls);
-        assert_eq!(caps.max_size, 35882577);
+        assert_eq!(caps.max_size, 35_882_577);
     }
 
     #[test]

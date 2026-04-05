@@ -43,6 +43,7 @@ impl SmtpConfig {
     /// Create a new SMTP configuration.
     ///
     /// Defaults: implicit TLS, no credentials, 5s timeout, verify certs.
+    #[must_use]
     pub fn new(host: &str, port: u16) -> Self {
         Self {
             host: host.to_string(),
@@ -55,12 +56,14 @@ impl SmtpConfig {
     }
 
     /// Set the TLS mode.
-    pub fn tls_mode(mut self, mode: TlsMode) -> Self {
+    #[must_use]
+    pub const fn tls_mode(mut self, mode: TlsMode) -> Self {
         self.tls_mode = mode;
         self
     }
 
     /// Set authentication credentials.
+    #[must_use]
     pub fn credentials(mut self, username: &str, password: &str) -> Self {
         self.credentials = Some(Credentials {
             username: username.to_string(),
@@ -70,24 +73,28 @@ impl SmtpConfig {
     }
 
     /// Set per-command timeout in milliseconds.
-    pub fn timeout_ms(mut self, ms: u32) -> Self {
+    #[must_use]
+    pub const fn timeout_ms(mut self, ms: u32) -> Self {
         self.timeout_ms = ms;
         self
     }
 
     /// Enable certificate verification (default).
+    #[must_use]
     pub fn verify_certs(mut self) -> Self {
         self.tls_verify = TlsVerify::Verify;
         self
     }
 
     /// Skip certificate verification.
+    #[must_use]
     pub fn skip_cert_verification(mut self) -> Self {
         self.tls_verify = TlsVerify::SkipVerify;
         self
     }
 
     /// Use a custom CA certificate in PEM format.
+    #[must_use]
     pub fn ca_cert_pem(mut self, pem: &[u8]) -> Self {
         self.tls_verify = TlsVerify::CustomCa(pem.to_vec());
         self

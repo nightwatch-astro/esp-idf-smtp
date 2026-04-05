@@ -21,6 +21,7 @@ impl SmtpResponse {
     /// - `250 Last line\r\n` (final)
     ///
     /// Returns the parsed response once a final line is seen.
+    #[must_use]
     pub fn parse(data: &[u8]) -> Option<Self> {
         let text = std::str::from_utf8(data).ok()?;
         let mut code: Option<u16> = None;
@@ -58,7 +59,7 @@ impl SmtpResponse {
         }
 
         if found_final {
-            Some(SmtpResponse {
+            Some(Self {
                 code: code?,
                 message: messages.join("\n"),
             })
@@ -68,12 +69,14 @@ impl SmtpResponse {
     }
 
     /// Check if this response indicates success (2xx).
-    pub fn is_success(&self) -> bool {
+    #[must_use]
+    pub const fn is_success(&self) -> bool {
         self.code >= 200 && self.code < 300
     }
 
     /// Check if this response is a positive intermediate reply (3xx).
-    pub fn is_intermediate(&self) -> bool {
+    #[must_use]
+    pub const fn is_intermediate(&self) -> bool {
         self.code >= 300 && self.code < 400
     }
 }
