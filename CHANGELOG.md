@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.3.1...v0.4.0) - 2026-07-14
+
+### Bug Fixes
+
+- use GitHub App token for CLA bot ([#23](https://github.com/nightwatch-astro/esp-idf-smtp/pull/23))
+
+### Miscellaneous
+
+- [**breaking**] relicense from Apache-2.0 to MPL-2.0 ([#22](https://github.com/nightwatch-astro/esp-idf-smtp/pull/22))
+- exclude shell and tooling scaffolding from language stats
+- *(deps)* bump dorny/paths-filter from 4.0.1 to 4.0.2 in the minor-and-patch group ([#19](https://github.com/nightwatch-astro/esp-idf-smtp/pull/19))
+- *(deps)* bump actions/checkout from 6.0.2 to 6.0.3 in the minor-and-patch group ([#17](https://github.com/nightwatch-astro/esp-idf-smtp/pull/17))
+- *(deps)* bump the minor-and-patch group with 2 updates ([#16](https://github.com/nightwatch-astro/esp-idf-smtp/pull/16))
+
+### Ci
+
+- bump shared release workflow to App-token version ([#20](https://github.com/nightwatch-astro/esp-idf-smtp/pull/20))
+
 ## [0.3.1](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.3.0...v0.3.1) - 2026-04-05
 
 ### Miscellaneous
