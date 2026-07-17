@@ -6,6 +6,7 @@ rust-version = "1.75"
 description = "Lightweight SMTP client over esp_tls for esp-idf-svc in Rust"
 license = "MPL-2.0"
 repository = "https://github.com/nightwatch-astro/esp-idf-smtp"
+documentation = "https://docs.rs/esp-idf-smtp"
 keywords = ["esp-idf", "esp32", "smtp", "email", "embedded"]
 categories = ["embedded", "email"]
 readme = "README.md"
