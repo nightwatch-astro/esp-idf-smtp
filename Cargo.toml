@@ -16,7 +16,7 @@ default = ["esp-idf"]
 esp-idf = ["dep:esp-idf-svc"]
 
 [dependencies]
-base64 = "0.22"
+base64 = "0.23"
 log = "0.4"
 thiserror = "2"
 
