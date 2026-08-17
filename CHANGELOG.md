@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.4.0...v0.4.1) - 2026-07-17
+
+### Miscellaneous
+
+- complete crates.io metadata (documentation/homepage) ([#25](https://github.com/nightwatch-astro/esp-idf-smtp/pull/25))
+
+### Ci
+
+- *(cla)* don't lock PRs after merge ([#27](https://github.com/nightwatch-astro/esp-idf-smtp/pull/27))
+
 ## [0.4.0](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.3.1...v0.4.0) - 2026-07-14
 
 ### Bug Fixes
