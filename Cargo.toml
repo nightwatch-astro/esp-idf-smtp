@@ -21,7 +21,7 @@ log = "0.4"
 thiserror = "2"
 
 # ESP-IDF dependencies (feature-gated)
-esp-idf-svc = { version = "0.52", default-features = false, optional = true }
+esp-idf-svc = { version = "0.53", default-features = false, optional = true }
 
 [lints.clippy]
 # Lint groups (lower priority so individual overrides win)
