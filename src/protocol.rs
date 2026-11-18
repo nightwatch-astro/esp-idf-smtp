@@ -344,7 +344,7 @@ mod tests {
             message: "smtp.example.com\nSIZE 1000".into(),
         };
         let caps = EhloCapabilities::parse(&resp);
-        assert!(caps.auth_methods.is_empty());
+        assert_eq!(caps.auth_methods.len(), 0);
         assert!(!caps.starttls);
     }
 }
