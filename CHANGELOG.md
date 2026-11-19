@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.4.0...v0.4.1) - 2026-11-19
+
+### Miscellaneous
+
+- configure Renovate ([#36](https://github.com/nightwatch-astro/esp-idf-smtp/pull/36))
+- *(deps)* update esp-idf-svc requirement from 0.52 to 0.53 ([#33](https://github.com/nightwatch-astro/esp-idf-smtp/pull/33))
+- *(deps)* bump dorny/paths-filter from 4.0.2 to 4.0.3 in the minor-and-patch group ([#32](https://github.com/nightwatch-astro/esp-idf-smtp/pull/32))
+- *(deps)* bump mozilla-actions/sccache-action from 0.0.10 to 0.0.11 in the minor-and-patch group ([#31](https://github.com/nightwatch-astro/esp-idf-smtp/pull/31))
+- *(deps)* update base64 requirement from 0.22 to 0.23 ([#29](https://github.com/nightwatch-astro/esp-idf-smtp/pull/29))
+- complete crates.io metadata (documentation/homepage) ([#25](https://github.com/nightwatch-astro/esp-idf-smtp/pull/25))
+
+### Testing
+
+- satisfy clippy assert_is_empty on Rust 1.99 ([#37](https://github.com/nightwatch-astro/esp-idf-smtp/pull/37))
+
+### Ci
+
+- move the CLA check to CLA Assistant ([#38](https://github.com/nightwatch-astro/esp-idf-smtp/pull/38))
+- *(cla)* don't lock PRs after merge ([#27](https://github.com/nightwatch-astro/esp-idf-smtp/pull/27))
+
 ## [0.4.0](https://github.com/nightwatch-astro/esp-idf-smtp/compare/v0.3.1...v0.4.0) - 2026-07-14
 
 ### Bug Fixes
